@@ -1,0 +1,7 @@
+/eeg-motor-movementimagery-dataset-1.0.0.zip
+
+
+/data/
+.venv/
+__pycache__/
+.ipynb_checkpoints/
