@@ -1,0 +1,157 @@
+#VRML_SIM R2025a utf8
+
+EXTERNPROTO "../protos/Wheelchair.proto"
+
+WorldInfo {
+  title "EEG Wheelchair - Simulation Test Arena"
+  basicTimeStep 16
+}
+Viewpoint {
+  fieldOfView 1
+  orientation 0.14540180981819326 -0.5529006116628985 -0.820462812883306 5.66282451073242
+  position -17.10979175765848 -8.22209221352467 8.504273191508522
+}
+Background {
+  skyColor [
+    0.85 0.9 0.94
+  ]
+}
+DirectionalLight {
+  direction -0.5 -1 -1
+}
+Solid {
+  translation 0 0 -0.05
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.68 0.72 0.73
+        roughness 1
+        metalness 0
+      }
+      geometry DEF FLOOR Box {
+        size 8 6 0.1
+      }
+    }
+  ]
+  name "floor"
+  boundingObject USE FLOOR
+}
+Solid {
+  translation 4 0 0.5
+  children [
+    Shape {
+      appearance DEF WALL_COLOR PBRAppearance {
+        baseColor 0.83 0.86 0.88
+        roughness 1
+        metalness 0
+      }
+      geometry DEF SIDE_WALL Box {
+        size 0.1 6 1
+      }
+    }
+  ]
+  name "east wall"
+  boundingObject USE SIDE_WALL
+}
+Solid {
+  translation -4 0 0.5
+  children [
+    Shape {
+      appearance USE WALL_COLOR
+      geometry USE SIDE_WALL
+    }
+  ]
+  name "west wall"
+  boundingObject USE SIDE_WALL
+}
+Solid {
+  translation 0 3 0.5
+  children [
+    Shape {
+      appearance USE WALL_COLOR
+      geometry DEF END_WALL Box {
+        size 8 0.1 1
+      }
+    }
+  ]
+  name "north wall"
+  boundingObject USE END_WALL
+}
+Solid {
+  translation 0 -3 0.5
+  children [
+    Shape {
+      appearance USE WALL_COLOR
+      geometry USE END_WALL
+    }
+  ]
+  name "south wall"
+  boundingObject USE END_WALL
+}
+Solid {
+  translation 0.4 0 0.4
+  children [
+    Shape {
+      appearance DEF OBSTACLE_COLOR PBRAppearance {
+        baseColor 0.82 0.25 0.14
+        roughness 0.8
+        metalness 0
+      }
+      geometry DEF OBSTACLE Box {
+        size 0.6 0.8 0.8
+      }
+    }
+  ]
+  name "forward stopping test obstacle"
+  boundingObject USE OBSTACLE
+}
+Solid {
+  translation 1.5 1.5 0.4
+  children [
+    Shape {
+      appearance USE OBSTACLE_COLOR
+      geometry USE OBSTACLE
+    }
+  ]
+  name "second obstacle"
+  boundingObject USE OBSTACLE
+}
+Solid {
+  translation 1.5 -1.5 0.5
+  children [
+    Shape {
+      appearance USE WALL_COLOR
+      geometry DEF PARTITION Box {
+        size 2.5 0.1 1
+      }
+    }
+  ]
+  name "interior partition"
+  boundingObject USE PARTITION
+}
+Wheelchair {
+  hidden position_0_0 -2.1588146704940403
+  hidden position_0_1 2.1588156701992927
+  hidden position_0_2 -6.521786346446664
+  hidden position2_0_2 -0.1342494135054469
+  hidden position3_0_2 -0.05920881325274223
+  hidden position_0_3 -6.519631164950761
+  hidden position2_0_3 0.14425139352890118
+  hidden position3_0_3 -0.02610683821148893
+  hidden linearVelocity_0 3.2607395928578094e-15 8.79913732623739e-17 2.923375827127269e-16
+  hidden angularVelocity_0 9.066117519114964e-17 3.5626213416386957e-16 -6.722294396552388e-15
+  hidden rotation_1 0.35393016314164566 -0.6613370696698914 0.6613370698055339 2.4612490962743636
+  hidden linearVelocity_1 -6.679617187295235e-16 3.1327706227283677e-16 -5.310493460735446e-19
+  hidden angularVelocity_1 -1.3589763478312984e-16 -2.762032365816699e-16 2.1475864644131377e-16
+  hidden rotation_2 0.35392979116108897 0.6613371692069246 -0.6613371693425673 2.4612497574165557
+  hidden linearVelocity_2 9.981202504681155e-16 -4.825421379276724e-16 -2.280213398315341e-16
+  hidden angularVelocity_2 1.7103878629792201e-15 4.059405824510385e-15 -4.989719170924711e-16
+  hidden rotation_3 0.8469939670003154 0.5085414249500719 0.15487685099723345 6.006680271036926
+  hidden linearVelocity_3 8.024121352742845e-15 -5.32984413118357e-16 -1.1842378929335003e-16
+  hidden angularVelocity_3 9.03656076012729e-15 1.3604611760868416e-13 8.351992563426554e-31
+  hidden rotation_4 0.8508226218972189 -0.5024522686462398 0.15376145095630728 6.003568237096633
+  hidden linearVelocity_4 1.349013674093017e-15 -2.625583694292886e-16 2.6053233644537007e-16
+  hidden angularVelocity_4 4.4515835736132636e-15 2.2872046033899005e-14 1.0931467521691787e-31
+  translation -2.000645838496805 1.5394632859426494e-05 0.14726673931608356
+  rotation 0.0028356128037991925 -0.004678840192685702 0.9999850337652451 1.0897261176791957
+}

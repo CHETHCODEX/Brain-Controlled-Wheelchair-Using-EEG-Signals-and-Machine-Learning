@@ -1,0 +1,186 @@
+#VRML_SIM R2025a utf8
+
+PROTO Wheelchair [
+  field SFVec3f translation 0 0 0.15
+  field SFRotation rotation 0 0 1 0
+  field SFString controller "wheelchair_driver"
+  field SFBool supervisor FALSE
+] {
+  Robot {
+    translation IS translation
+    rotation IS rotation
+    controller IS controller
+    supervisor IS supervisor
+    name "BCI wheelchair simulation"
+    children [
+      Pose {
+        translation 0.05 0 0.12
+        children [
+          Shape {
+            appearance DEF FRAME PBRAppearance { baseColor 0.08 0.43 0.4 roughness 0.5 metalness 0.3 }
+            geometry DEF CHASSIS Box { size 0.55 0.46 0.16 }
+          }
+        ]
+      }
+      Pose {
+        translation 0 0 0.36
+        children [
+          Shape {
+            appearance DEF FABRIC PBRAppearance { baseColor 0.16 0.18 0.19 roughness 1 metalness 0 }
+            geometry DEF SEAT Box { size 0.5 0.46 0.08 }
+          }
+        ]
+      }
+      Pose {
+        translation -0.22 0 0.59
+        children [
+          Shape { appearance USE FABRIC geometry DEF BACK Box { size 0.07 0.46 0.4 } }
+        ]
+      }
+      Pose {
+        translation 0 0.24 0.51
+        children [ Shape { appearance USE FRAME geometry DEF ARM Box { size 0.43 0.045 0.04 } } ]
+      }
+      Pose {
+        translation 0 -0.24 0.51
+        children [ Shape { appearance USE FRAME geometry USE ARM } ]
+      }
+      HingeJoint {
+        jointParameters HingeJointParameters { axis 0 1 0 anchor 0 0.275 0 }
+        device [ RotationalMotor { name "left wheel motor" maxVelocity 8 maxTorque 30 } ]
+        endPoint Solid {
+          translation 0 0.275 0
+          rotation 1 0 0 1.570796327
+          name "left drive wheel"
+          children [
+            Shape {
+              appearance DEF RUBBER PBRAppearance { baseColor 0.055 0.06 0.065 roughness 1 metalness 0 }
+              geometry DEF WHEEL Cylinder { height 0.045 radius 0.15 subdivision 32 }
+            }
+            DEF SPOKES Group {
+              children [
+                Shape { appearance DEF CHROME PBRAppearance { baseColor 0.72 0.77 0.78 roughness 0.3 metalness 0.8 } geometry Box { size 0.25 0.012 0.05 } }
+                Shape { appearance USE CHROME geometry Box { size 0.012 0.25 0.05 } }
+              ]
+            }
+          ]
+          boundingObject USE WHEEL
+          physics Physics { density -1 mass 1 }
+        }
+      }
+      HingeJoint {
+        jointParameters HingeJointParameters { axis 0 1 0 anchor 0 -0.275 0 }
+        device [ RotationalMotor { name "right wheel motor" maxVelocity 8 maxTorque 30 } ]
+        endPoint Solid {
+          translation 0 -0.275 0
+          rotation 1 0 0 1.570796327
+          name "right drive wheel"
+          children [ Shape { appearance USE RUBBER geometry USE WHEEL } USE SPOKES ]
+          boundingObject USE WHEEL
+          physics Physics { density -1 mass 1 }
+        }
+      }
+      BallJoint {
+        jointParameters BallJointParameters { anchor 0.3 0.18 -0.09 }
+        endPoint Solid {
+          translation 0.3 0.18 -0.09
+          name "left passive ball caster"
+          children [ Shape { appearance USE RUBBER geometry DEF CASTER Sphere { radius 0.06 subdivision 2 } } ]
+          boundingObject USE CASTER
+          physics Physics { density -1 mass 0.15 }
+        }
+      }
+      BallJoint {
+        jointParameters BallJointParameters { anchor 0.3 -0.18 -0.09 }
+        endPoint Solid {
+          translation 0.3 -0.18 -0.09
+          name "right passive ball caster"
+          children [ Shape { appearance USE RUBBER geometry USE CASTER } ]
+          boundingObject USE CASTER
+          physics Physics { density -1 mass 0.15 }
+        }
+      }
+      DistanceSensor {
+        translation 0.36 0.18 0.12
+        rotation 0 0 1 0.35
+        name "front_left"
+        type "generic"
+        numberOfRays 3
+        aperture 0.25
+        lookupTable [ 0 0 0, 2 2 0 ]
+      }
+      DistanceSensor {
+        translation 0.37 0 0.12
+        name "front_center"
+        type "generic"
+        numberOfRays 3
+        aperture 0.25
+        lookupTable [ 0 0 0, 2 2 0 ]
+      }
+      DistanceSensor {
+        translation 0.36 -0.18 0.12
+        rotation 0 0 1 -0.35
+        name "front_right"
+        type "generic"
+        numberOfRays 3
+        aperture 0.25
+        lookupTable [ 0 0 0, 2 2 0 ]
+      }
+      DistanceSensor {
+        translation -0.29 0.18 0.12
+        rotation 0 0 1 2.79
+        name "rear_left"
+        type "generic"
+        numberOfRays 3
+        aperture 0.3
+        lookupTable [ 0 0 0, 2 2 0 ]
+      }
+      DistanceSensor {
+        translation -0.30 0 0.12
+        rotation 0 0 1 3.141592654
+        name "rear_center"
+        type "generic"
+        numberOfRays 3
+        aperture 0.3
+        lookupTable [ 0 0 0, 2 2 0 ]
+      }
+      DistanceSensor {
+        translation -0.29 -0.18 0.12
+        rotation 0 0 1 -2.79
+        name "rear_right"
+        type "generic"
+        numberOfRays 3
+        aperture 0.3
+        lookupTable [ 0 0 0, 2 2 0 ]
+      }
+      DistanceSensor {
+        translation 0 0.32 0.12
+        rotation 0 0 1 1.570796327
+        name "side_left"
+        type "generic"
+        numberOfRays 3
+        aperture 0.4
+        lookupTable [ 0 0 0, 2 2 0 ]
+      }
+      DistanceSensor {
+        translation 0 -0.32 0.12
+        rotation 0 0 1 -1.570796327
+        name "side_right"
+        type "generic"
+        numberOfRays 3
+        aperture 0.4
+        lookupTable [ 0 0 0, 2 2 0 ]
+      }
+      GPS { name "position" }
+      InertialUnit { name "orientation" }
+    ]
+    boundingObject Group {
+      children [
+        Pose { translation 0.05 0 0.12 children [ USE CHASSIS ] }
+        Pose { translation 0 0 0.36 children [ USE SEAT ] }
+        Pose { translation -0.22 0 0.59 children [ USE BACK ] }
+      ]
+    }
+    physics Physics { density -1 mass 14 centerOfMass [ 0.05 0 0.1 ] }
+  }
+}

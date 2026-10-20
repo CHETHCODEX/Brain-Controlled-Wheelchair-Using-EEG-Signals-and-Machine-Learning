@@ -5,3 +5,9 @@
 .venv/
 __pycache__/
 .ipynb_checkpoints/
+/artifacts/
+/DATASET/
+*.egg-info/
+/simulation/worlds/.*.wbproj
+/simulation/worlds/.*.jpg
+/simulation/worlds/validation_*.wbt

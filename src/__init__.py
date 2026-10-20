@@ -1,0 +1,1 @@
+"""Offline EEG research and simulated wheelchair control."""

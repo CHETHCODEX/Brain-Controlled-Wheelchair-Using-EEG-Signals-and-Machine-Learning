@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f7f6">
+  <title>NeuroMove | BCI Session Monitor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <script defer src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+  <script defer src="/app.js"></script>
+</head>
+<body data-view="overview">
+  <header class="masthead">
+    <div class="identity"><span class="brand-mark"><i data-lucide="brain-circuit"></i></span><div><h1>NeuroMove<span>BCI</span></h1><p>REHABILITATION SYSTEMS / SESSION MONITOR</p></div></div>
+    <div class="header-status"><span id="source" class="source-tag">SIMULATED EEG</span><span id="bridge" class="connection"><b></b>Awaiting Webots</span></div>
+    <div class="caregiver"><button id="reset" class="icon-button" title="Caregiver: reset emergency latch" aria-label="Caregiver: reset emergency latch" disabled><i data-lucide="rotate-ccw"></i></button><button id="emergency" class="emergency-button"><i data-lucide="octagon-alert"></i><span>Emergency stop</span></button></div>
+  </header>
+  <div class="subheader"><nav aria-label="Monitor views"><button class="tab active" data-view="overview" aria-pressed="true"><i data-lucide="layout-dashboard"></i>Overview</button><button class="tab" data-view="signal" aria-pressed="false"><i data-lucide="activity"></i>Signal quality</button><button class="tab" data-view="events" aria-pressed="false"><i data-lucide="list-filter"></i>Prediction log</button></nav><span class="prototype-label">SIMULATION PROTOTYPE <span class="divider">/</span> NOT FOR CLINICAL USE</span></div>
+  <main>
+    <div id="notice" class="notice" role="status" hidden></div>
+    <div class="session-heading"><div><p class="eyebrow">NEURAL MOBILITY / ACTIVE SESSION</p><h2>Rehabilitation centre</h2></div><div class="session-clock"><span>MONITOR UPTIME</span><strong id="uptime">00:00</strong></div></div>
+    <section class="metrics" aria-label="Session summary">
+      <div><span class="metric-label">DETECTED INTENTION</span><strong id="intent">Neutral</strong><small id="validated">Awaiting input</small></div>
+      <div><span class="metric-label">CLASSIFIER CONFIDENCE</span><strong id="confidence">--<em>%</em></strong><small id="stability">Awaiting validation</small></div>
+      <div><span class="metric-label">HEADSET / SIGNAL QUALITY</span><strong id="headset">Connecting</strong><small id="quality">No samples received</small></div>
+      <div><span class="metric-label">SAFETY CONTROLLER</span><strong id="safety">Standby</strong><small id="safety-detail">Awaiting simulator</small></div>
+    </section>
+    <div class="workspace">
+      <section class="map-section">
+        <div class="section-title"><h3><i data-lucide="map"></i>Clinical environment</h3><span class="mono">18 x 12 m</span></div>
+        <div class="map-surface"><canvas id="floorplan" aria-label="Hospital floor plan and actual Webots wheelchair position"></canvas><span class="map-status" id="map-status">WEBOTS POSITION UNAVAILABLE</span></div>
+        <div class="map-legend"><span><b class="legend-route"></b>Navigation route</span><span><b class="legend-destination"></b>Destination</span><span><b class="legend-chair"></b>Wheelchair</span></div>
+        <div class="motion-strip"><div><span>SPEED</span><strong id="speed">-- <small>m/s</small></strong></div><div><span>DIRECTION</span><strong id="direction">Unavailable</strong></div><div><span>NEAREST OBSTACLE</span><strong id="clearance">-- <small>m</small></strong></div></div>
+        <div class="sensor-heading"><h4>Surround sensing</h4><span id="obstacle-status">No telemetry</span></div>
+        <div id="sensors" class="sensors"></div>
+      </section>
+      <div class="signal-column">
+        <section class="eeg-section"><div class="section-title"><h3><i data-lucide="activity"></i>Sensorimotor EEG</h3><span id="wave-source" class="mini-tag">SIMULATED</span></div><div class="signal-meta"><span>160 Hz <b>/</b> 8-30 Hz <b>/</b> 7 channels</span><span>2.0 s window</span></div><canvas id="eeg" aria-label="Seven-channel EEG waveform monitor"></canvas><div class="signal-footer"><span id="wave-status">Awaiting samples</span><span>Amplitude: uV</span></div></section>
+        <section class="intention-section"><div class="section-title"><h3><i data-lucide="scan-line"></i>Intent classification</h3><span class="mono">4 Hz</span></div><div id="probabilities" class="probabilities"></div><div class="gate-strip"><span id="gate-dot" class="gate-dot"></span><span id="gate">Confidence / stability gate awaiting input</span></div></section>
+      </div>
+    </div>
+    <section class="pipeline" aria-label="BCI processing architecture"><span><i data-lucide="headphones"></i>EEG input</span><b>&rarr;</b><span>Signal processing</span><b>&rarr;</b><span>Feature extraction</span><b>&rarr;</b><span>Classification</span><b>&rarr;</b><span>Stability gate</span><b>&rarr;</b><span>Safety controller</span><b>&rarr;</b><span><i data-lucide="accessibility"></i>Motion</span></section>
+    <section class="history-section"><div class="section-title"><h3><i data-lucide="history"></i>Prediction history</h3><span id="history-count" class="mono">0 predictions</span></div><div class="table-scroll"><table><thead><tr><th>TIME</th><th>DETECTED INTENT</th><th>CONFIDENCE</th><th>INPUT SOURCE</th><th>STABILITY GATE</th></tr></thead><tbody id="history"><tr><td colspan="5">Awaiting predictions</td></tr></tbody></table></div></section>
+    <footer><span id="classifier">Synthetic input / no headset connected</span><span>LOCAL SIMULATION <b>/</b> CAREGIVER OVERRIDE ENABLED</span></footer>
+  </main>
+</body>
+</html>
