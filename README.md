@@ -237,16 +237,56 @@ REST, TURN_LEFT, and TURN_RIGHT. Commands end after at most 60 seconds.
 After training the four-state model, reload the world and replay a recording:
 
 ```powershell
-& ./.venv/Scripts/python.exe -m src.streaming.inference_engine --model artifacts/multiclass_lda.joblib --recording data/raw/S001/S001R04.edf --publish --seconds 20
+& ./.venv/Scripts/python.exe -m src.streaming.inference_engine --model artifacts/multiclass_lda.joblib --recording data/raw/S001/S001R04.edf --publish --seconds 20 --smoothing-windows 8
 ```
 
 Omit `--publish` to inspect probabilities without driving the simulation.
+Use `--smoothing-windows` (for example `8`) to average recent probability vectors and reduce command jitter while keeping the same safety thresholds.
 Only load trusted local `.joblib` models: this serialization format can execute
 code. Binary models cannot publish to the wheelchair because they have no
 REST class. Replaying training recordings demonstrates integration only;
 use held-out recordings for an independent performance assessment.
 
 ## Safety And Limits
+
+### Recorded-EEG-Assisted Destination Demo (Webots Only)
+
+For a video-ready launch from the repository root, run:
+
+```powershell
+& .\scripts\run_navigation_demo.ps1 -ConfirmStart
+```
+
+This opens Webots if needed, checks fresh controller telemetry and the dock
+position, and provides a ten-second recording countdown. If the world is
+already open away from the dock, reload it before running the launcher.
+Opening Webots alone does not start a trip. Keep both the terminal and Webots
+visible while filming; the trip ends once, rather than looping automatically.
+
+Open `simulation/worlds/hospital_rehab.wbt` in Webots, reload it to start at
+the dock, and run in real-time mode. Stop the dashboard and other publishers
+first: only one process can use port 5555. Then, from the repository root:
+
+```powershell
+& .\.venv\Scripts\python.exe -m src.bci.navigation_demo --confirm-start
+```
+
+This explicitly authorizes a trip to a free-space arrival point near the
+caregiver station. Recorded S001R06 EEG is replayed while the chair remains
+stopped. Two consecutive qualifying FORWARD predictions request the trip;
+there is no fabricated trigger if the classifier never qualifies. The
+autonomous planner then chooses movements using the hospital map, GPS, and
+heading, keeping clearance from mapped furniture/walls. These subsequent
+commands are **planner commands, not EEG predictions**. Film the terminal
+alongside Webots to show replay, trip request, waypoints, and arrival.
+
+Existing obstacle and emergency stops remain active. An unmapped obstacle,
+stale telemetry, lack of progress, or controller fault stops the trip;
+this demo does not implement dynamic obstacle replanning. Ctrl+C cancels.
+Runtime phase information is saved in `artifacts/runtime/navigation.json`.
+This demonstrates recorded-EEG-assisted autonomy, **not live headset control
+or validated medical navigation**. The classifier remains experimental and
+replaying its training recording establishes integration, not accuracy.
 
 EEG replay uses a 2-second buffer with 250 ms stride. Motion requires two
 consecutive predictions at confidence >=0.65, a probability margin >=0.15,

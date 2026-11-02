@@ -22,9 +22,10 @@ merged into FORWARD. The binary task uses only the 45 left/right trials.
 ## Evaluation
 
 CSP uses four components and Ledoit-Wolf regularization. LDA uses automatic
-shrinkage; SVM uses an RBF kernel, C=1, and three-fold probability calibration.
-These are the existing baseline configurations, not hyperparameters chosen
-after inspecting S001 test-fold results.
+shrinkage; four-state LDA uses uniform class priors to account for the
+imbalanced REST, left, right, and forward classes. SVM uses an RBF kernel,
+C=1, and three-fold probability calibration. These are predefined model
+configurations, not hyperparameters selected against S001 test-fold results.
 
 Entire recording runs are held out with GroupKFold. CSP is fitted only on
 each training fold. Binary evaluation uses three folds; four-state evaluation
@@ -48,15 +49,18 @@ is tested within this environment, not promised across library versions or hardw
 | Left/right | CSP + LDA | 71.11% | 71.44% | 51.11% |
 | Left/right | CSP + SVM | 68.89% | 68.97% | 51.11% |
 | Left/right | EEGNet | 46.67% | 46.44% | 51.11% |
-| Four-state | CSP + LDA | 53.89% | 41.82% | 50.00% |
+| Four-state | CSP + LDA, uniform priors, 8 CSP components | 53.89% | 54.91% | 50.00% |
 | Four-state | CSP + SVM | 48.89% | 28.64% | 50.00% |
 | Four-state | EEGNet | 46.67% | 33.13% | 50.00% |
 
-The binary LDA fold accuracies are 80.00%, 53.33%, and 80.00%, showing
-substantial recording variability. No tested model achieves the 80% binary or
-70% multiclass HLD target. Four-state accuracy is dominated by REST; the SVM
-does not exceed the majority-class baseline and has zero FORWARD recall in
-this evaluation. These models are not ready for reliable wheelchair navigation.
+The four-state LDA's uniform priors improve balanced accuracy from 41.82% to
+54.91% on the same recording-disjoint folds, while overall accuracy remains
+53.89%. This addresses the imbalance in the benchmark but does not make the
+model reliable: it still misses the 70% multiclass HLD target and needs
+independent evaluation. The binary LDA fold accuracies are 80.00%, 53.33%,
+and 80.00%, showing substantial recording variability. The SVM does not exceed
+the majority-class baseline and has zero FORWARD recall in this evaluation.
+These models are not ready for reliable wheelchair navigation.
 
 EEGNet binary fold accuracies are 46.67%, 53.33%, and 40.00%; four-state fold
 accuracies are 45.00%, 50.00%, 30.00%, 46.67%, and 63.33%. Pooled four-state

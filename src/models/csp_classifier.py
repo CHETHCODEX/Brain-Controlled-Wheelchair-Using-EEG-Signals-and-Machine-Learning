@@ -48,6 +48,16 @@ def train(dataset: Path, output: Path, task="binary", classifier="lda", subject=
     expected = [1, 2] if task == "binary" else [0, 1, 2, 3]
     if sorted(np.unique(labels).tolist()) != expected:
         raise ValueError(f"Subject {subject} must contain all task labels: {expected}")
+
+    def training_pipeline():
+        pipeline = make_pipeline(classifier)
+        if task == "multiclass" and classifier == "lda":
+            pipeline.set_params(
+                classifier__priors=np.full(len(expected), 1.0 / len(expected)),
+                csp__n_components=8,
+            )
+        return pipeline
+
     folds = min(5, len(np.unique(groups)))
     if folds < 2:
         raise ValueError("At least two distinct runs are required for held-out evaluation")
@@ -57,7 +67,7 @@ def train(dataset: Path, output: Path, task="binary", classifier="lda", subject=
     for training, validation in GroupKFold(n_splits=folds).split(data, labels, groups):
         if sorted(np.unique(labels[training]).tolist()) != expected:
             raise ValueError("A training fold lacks a task class; provide more recording runs")
-        pipeline = make_pipeline(classifier)
+        pipeline = training_pipeline()
         pipeline.fit(data[training], labels[training])
         predictions[validation] = pipeline.predict(data[validation])
         scores.append(float(accuracy_score(labels[validation], predictions[validation])))
@@ -68,19 +78,29 @@ def train(dataset: Path, output: Path, task="binary", classifier="lda", subject=
         })
     class_counts = [int(np.sum(labels == label)) for label in expected]
     report = {
-        "task": task, "classifier": classifier, "subject": subject,
-        "evaluation": "recording-disjoint GroupKFold", "folds": folds,
+        "task": task,
+        "classifier": classifier,
+        "subject": subject,
+        "evaluation": "recording-disjoint GroupKFold",
+        "folds": folds,
         "fold_accuracy": scores,
         "accuracy": float(accuracy_score(labels, predictions)),
         "balanced_accuracy": float(balanced_accuracy_score(labels, predictions)),
         "confusion_matrix": confusion_matrix(labels, predictions, labels=expected).tolist(),
-        "class_order": expected, "trials": len(labels),
-        "class_counts": class_counts, "majority_class_accuracy": max(class_counts) / len(labels),
+        "class_order": expected,
+        "trials": len(labels),
+        "class_counts": class_counts,
+        "majority_class_accuracy": max(class_counts) / len(labels),
+        "prior_policy": "uniform" if task == "multiclass" and classifier == "lda" else "estimator_default",
+        "csp_components": 8 if task == "multiclass" and classifier == "lda" else 4,
         "run_splits": run_splits,
-        "note": ("Three hand-imagery runs permit three disjoint folds, not five."
-             if task == "binary" else "Five folds hold out entire runs across six imagery recordings."),
+        "note": (
+            "Three hand-imagery runs permit three disjoint folds, not five."
+            if task == "binary"
+            else "Five folds hold out entire runs across six imagery recordings."
+        ),
     }
-    pipeline = make_pipeline(classifier)
+    pipeline = training_pipeline()
     pipeline.fit(data, labels)
     output.parent.mkdir(parents=True, exist_ok=True)
     joblib.dump({"pipeline": pipeline, "metadata": metadata, "report": report}, output)
@@ -107,5 +127,9 @@ if __name__ == "__main__":
     parser.add_argument("--classifier", choices=["lda", "svm"], default="lda")
     parser.add_argument("--subject", type=int, default=1)
     arguments = parser.parse_args()
-    print(json.dumps(train(arguments.dataset, arguments.output, arguments.task,
-                           arguments.classifier, arguments.subject), indent=2))
+    print(
+        json.dumps(
+            train(arguments.dataset, arguments.output, arguments.task, arguments.classifier, arguments.subject),
+            indent=2,
+        )
+    )

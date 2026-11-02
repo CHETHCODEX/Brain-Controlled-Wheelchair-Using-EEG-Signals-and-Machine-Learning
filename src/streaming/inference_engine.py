@@ -21,6 +21,20 @@ def windows(samples):
             yield buffer.window()
 
 
+def smooth_probabilities(history, current, smoothing_windows):
+    if smoothing_windows < 1:
+        raise ValueError("Smoothing windows must be at least one")
+    history.append(current)
+    if len(history) > smoothing_windows:
+        history.pop(0)
+    averaged = {name: 0.0 for name in current}
+    for probabilities in history:
+        for name, value in probabilities.items():
+            averaged[name] += value
+    scale = float(len(history))
+    return {name: value / scale for name, value in averaged.items()}
+
+
 def load_decoder(path: Path):
     if path.suffix == ".pt":
         from src.models.trainer import EEGNetPredictor
@@ -33,7 +47,7 @@ def load_decoder(path: Path):
     return bundle["metadata"], bundle["report"], lambda window: predict_window(bundle, window)
 
 
-def replay(model: Path, recording: Path, publish=False, seconds=10.0):
+def replay(model: Path, recording: Path, publish=False, seconds=10.0, smoothing_windows=1):
     if seconds <= 0:
         raise ValueError("Replay duration must be positive")
     metadata, report, predict = load_decoder(model)
@@ -42,6 +56,7 @@ def replay(model: Path, recording: Path, publish=False, seconds=10.0):
     raw = load_recording(recording)
     samples = filter_raw(raw, metadata.get("notch", 60.0)).get_data()
     publisher = Publisher() if publish else None
+    history = []
     try:
         deadline = time.monotonic()
         count = 0
@@ -52,7 +67,7 @@ def replay(model: Path, recording: Path, publish=False, seconds=10.0):
             if remaining > 0:
                 time.sleep(remaining)
             started = time.perf_counter()
-            probabilities = predict(window)
+            probabilities = smooth_probabilities(history, predict(window), smoothing_windows)
             elapsed = (time.perf_counter() - started) * 1000
             packet = publisher.send(probabilities) if publisher else {"probabilities": probabilities}
             print(json.dumps({**packet, "inference_ms": elapsed}), flush=True)
@@ -70,8 +85,10 @@ if __name__ == "__main__":
     parser.add_argument("--recording", type=Path, required=True)
     parser.add_argument("--publish", action="store_true")
     parser.add_argument("--seconds", type=float, default=10.0)
+    parser.add_argument("--smoothing-windows", type=int, default=1)
     arguments = parser.parse_args()
     try:
-        replay(arguments.model, arguments.recording, arguments.publish, arguments.seconds)
+        replay(arguments.model, arguments.recording, arguments.publish,
+               arguments.seconds, arguments.smoothing_windows)
     except KeyboardInterrupt:
         pass

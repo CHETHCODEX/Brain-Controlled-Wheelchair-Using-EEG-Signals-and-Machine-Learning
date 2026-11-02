@@ -22,9 +22,14 @@ class ModelTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             dataset = Path(directory) / "epochs.npz"
             model = Path(directory) / "model.joblib"
-            np.savez(dataset, X=data, y=labels, subjects=np.ones(36),
-                     runs=np.repeat([4, 8, 12], 12),
-                     metadata=json.dumps({"channels": list(CHANNELS), "sfreq": 160.0}))
+            np.savez(
+                dataset,
+                X=data,
+                y=labels,
+                subjects=np.ones(36),
+                runs=np.repeat([4, 8, 12], 12),
+                metadata=json.dumps({"channels": list(CHANNELS), "sfreq": 160.0}),
+            )
             report = train(dataset, model)
             self.assertEqual(report["folds"], 3)
             self.assertGreater(report["accuracy"], 0.9)
@@ -51,9 +56,14 @@ class ModelTests(unittest.TestCase):
             data[labels == label, label] *= 6
         with tempfile.TemporaryDirectory() as directory:
             dataset = Path(directory) / "epochs.npz"
-            np.savez(dataset, X=data, y=labels, subjects=np.ones(48),
-                     runs=np.repeat([4, 8, 12, 6, 10, 14], 8),
-                     metadata=json.dumps({"channels": list(CHANNELS), "sfreq": 160.0}))
+            np.savez(
+                dataset,
+                X=data,
+                y=labels,
+                subjects=np.ones(48),
+                runs=np.repeat([4, 8, 12, 6, 10, 14], 8),
+                metadata=json.dumps({"channels": list(CHANNELS), "sfreq": 160.0}),
+            )
             for classifier in ["lda", "svm"]:
                 with self.subTest(classifier=classifier):
                     model = Path(directory) / f"{classifier}.joblib"
@@ -61,7 +71,18 @@ class ModelTests(unittest.TestCase):
                     self.assertEqual(report["class_order"], [0, 1, 2, 3])
                     self.assertEqual(report["folds"], 5)
                     self.assertTrue(model.with_suffix(".json").exists())
-                    result = predict_window(joblib.load(model), data[0, :, :320])
+                    bundle = joblib.load(model)
+                    if classifier == "lda":
+                        self.assertEqual(report["prior_policy"], "uniform")
+                        self.assertEqual(report["csp_components"], 8)
+                        self.assertEqual(
+                            list(bundle["pipeline"].named_steps["classifier"].priors),
+                            [0.25] * 4,
+                        )
+                    else:
+                        self.assertEqual(report["prior_policy"], "estimator_default")
+                        self.assertEqual(report["csp_components"], 4)
+                    result = predict_window(bundle, data[0, :, :320])
                     self.assertAlmostEqual(sum(result.values()), 1.0)
                     self.assertTrue(all(0 <= value <= 1 for value in result.values()))
 
